@@ -31,6 +31,9 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import com.kinvey.android.Client;
+import com.kinvey.android.callback.KinveyPingCallback;
+
 public final class ContactManager extends Activity
 {
 
@@ -45,6 +48,16 @@ public final class ContactManager extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+    	final Client mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
+    	
+    	mKinveyClient.ping(new KinveyPingCallback() {
+    	    public void onFailure(Throwable t) {
+    	        Log.e(TAG, "Kinvey Ping Failed", t);
+    	    }
+    	    public void onSuccess(Boolean b) {
+    	        Log.d(TAG, "Kinvey Ping Success");
+    	    }
+    	});
         Log.v(TAG, "Activity State: onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.contact_manager);
