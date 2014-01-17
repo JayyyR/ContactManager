@@ -31,93 +31,125 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import com.kinvey.android.AsyncAppData;
 import com.kinvey.android.Client;
 import com.kinvey.android.callback.KinveyPingCallback;
+import com.kinvey.android.callback.KinveyUserCallback;
+import com.kinvey.java.User;
+import com.kinvey.java.core.KinveyClientCallback;
 
 public final class ContactManager extends Activity
 {
 
-    public static final String TAG = "ContactManager";
+	public static final String TAG = "ContactManager";
 
-    private Button mAddAccountButton;
-    private ListView mContactList;
+	private Button mAddAccountButton;
+	private ListView mContactList;
 
-    /**
-     * Called when the activity is first created. Responsible for initializing the UI.
-     */
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-    	final Client mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
-    	
-    	mKinveyClient.ping(new KinveyPingCallback() {
-    	    public void onFailure(Throwable t) {
-    	        Log.e(TAG, "Kinvey Ping Failed", t);
-    	    }
-    	    public void onSuccess(Boolean b) {
-    	        Log.d(TAG, "Kinvey Ping Success");
-    	    }
-    	});
-        Log.v(TAG, "Activity State: onCreate()");
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.contact_manager);
+	/**
+	 * Called when the activity is first created. Responsible for initializing the UI.
+	 */
+	@Override
+	public void onCreate(Bundle savedInstanceState)
+	{
+		final Client mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 
-        // Obtain handles to UI objects
-        mAddAccountButton = (Button) findViewById(R.id.addContactButton);
-        mContactList = (ListView) findViewById(R.id.contactList);
+		mKinveyClient.ping(new KinveyPingCallback() {
+			public void onFailure(Throwable t) {
+				Log.e(TAG, "Kinvey Ping Failed", t);
+			}
+			public void onSuccess(Boolean b) {
+				Log.d(TAG, "Kinvey Ping Success");
+			}
+		});
+		Log.v(TAG, "Activity State: onCreate()");
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.contact_manager);
+
+		// Obtain handles to UI objects
+		mAddAccountButton = (Button) findViewById(R.id.addContactButton);
+		mContactList = (ListView) findViewById(R.id.contactList);
 
 
-        // Register handler for UI elements
-        mAddAccountButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Log.d(TAG, "mAddAccountButton clicked");
-                launchContactAdder();
-            }
-        });
+		// Register handler for UI elements
+		mAddAccountButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Log.d(TAG, "mAddAccountButton clicked");
+				launchContactAdder();
+			}
+		});
 
-        // Populate the contact list
-        populateContactList();
-    }
+		//testing
+		if (!mKinveyClient.user().isUserLoggedIn()){
+			mKinveyClient.user().login(new KinveyUserCallback() {
+				@Override
+				public void onFailure(Throwable error) {
+					Log.e(TAG, "Login Failure", error);
+				}
+				@Override
+				public void onSuccess(User result) {
+					Log.i(TAG,"Logged in a new implicit user with id: " + result.getId());
+				}
+			});
+		}
 
-    /**
-     * Populate the contact list based on account currently selected in the account spinner.
-     */
-    private void populateContactList() {
-        // Build adapter with contact entries
-        Cursor cursor = getContacts();
-        String[] fields = new String[] {
-                ContactsContract.Data.DISPLAY_NAME
-        };
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.contact_entry, cursor,
-                fields, new int[] {R.id.contactEntryText});
-        mContactList.setAdapter(adapter);
-    }
+		ContactEntity contact = new ContactEntity();
+		contact.setName("Joe");
+		AsyncAppData<ContactEntity> myevents = mKinveyClient.appData("events", ContactEntity.class);
+		myevents.save(contact, new KinveyClientCallback<ContactEntity>() {
+			@Override
+			public void onFailure(Throwable e) {
+				Log.e(TAG, "failed to save event data", e); 
+			}
+			@Override
+			public void onSuccess(ContactEntity r) {
+				Log.d(TAG, "saved data for entity "+ r.getName()); 
+			}
+		});
 
-    /**
-     * Obtains the contact list for the currently selected account.
-     *
-     * @return A cursor for for accessing the contact list.
-     */
-    private Cursor getContacts()
-    {
-        // Run query
-        Uri uri = ContactsContract.Contacts.CONTENT_URI;
-        String[] projection = new String[] {
-                ContactsContract.Contacts._ID,
-                ContactsContract.Contacts.DISPLAY_NAME
-        };
-        String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
-        String[] selectionArgs = null;
-        String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+		// Populate the contact list
+		// populateContactList();
+	}
 
-        return managedQuery(uri, projection, selection, selectionArgs, sortOrder);
-    }
+	/**
+	 * Populate the contact list based on account currently selected in the account spinner.
+	 */
+	private void populateContactList() {
+		// Build adapter with contact entries
+		Cursor cursor = getContacts();
+		String[] fields = new String[] {
+				ContactsContract.Data.DISPLAY_NAME
+		};
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.contact_entry, cursor,
+				fields, new int[] {R.id.contactEntryText});
+		mContactList.setAdapter(adapter);
+	}
 
-    /**
-     * Launches the ContactAdder activity to add a new contact to the selected accont.
-     */
-    protected void launchContactAdder() {
-        Intent i = new Intent(this, ContactAdder.class);
-        startActivity(i);
-    }
+	/**
+	 * Obtains the contact list for the currently selected account.
+	 *
+	 * @return A cursor for for accessing the contact list.
+	 */
+	private Cursor getContacts()
+	{
+		// Run query
+		Uri uri = ContactsContract.Contacts.CONTENT_URI;
+		String[] projection = new String[] {
+				ContactsContract.Contacts._ID,
+				ContactsContract.Contacts.DISPLAY_NAME
+		};
+		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
+		String[] selectionArgs = null;
+		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+
+		return managedQuery(uri, projection, selection, selectionArgs, sortOrder);
+	}
+
+	/**
+	 * Launches the ContactAdder activity to add a new contact to the selected accont.
+	 */
+	protected void launchContactAdder() {
+		Intent i = new Intent(this, ContactAdder.class);
+		startActivity(i);
+	}
 }
