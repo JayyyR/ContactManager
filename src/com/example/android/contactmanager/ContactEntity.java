@@ -6,38 +6,38 @@ import com.google.api.client.util.Key;
 public class ContactEntity extends GenericJson {
 
 	@Key
-	private String Name;
+	private String name;
 
 	public ContactEntity(){}
 
-	private static class Phone extends GenericJson {     
+	private static class phone extends GenericJson {     
 
 		@Key
-		private String Phone;
+		private String phone;
 
 		@Key
-		private String PhoneType;
+		private String type;
 
-		public Phone(){}
+		public phone(){}
 	}
 
-	private static class Email extends GenericJson {     
+	private static class email extends GenericJson {     
 
 		@Key
-		private String Email;
+		private String email;
 
 		@Key
-		private String EmailType;
+		private String type;
 
-		public Email(){}
+		public email(){}
 	}
 	
 	public void setName(String name){
-		Name = name;
+		name = name;
 	}
 	
 	public String getName(){
-		return Name;
+		return name;
 	}
 
 }
