@@ -30,6 +30,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 import com.kinvey.android.AsyncAppData;
 import com.kinvey.android.Client;
@@ -52,6 +53,11 @@ public final class ContactManager extends Activity
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
+		Log.v(TAG, "Activity State: onCreate()");
+		super.onCreate(savedInstanceState);
+
+
+		//Connect to Kinvey Backend
 		final Client mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 
 		mKinveyClient.ping(new KinveyPingCallback() {
@@ -62,8 +68,7 @@ public final class ContactManager extends Activity
 				Log.d(TAG, "Kinvey Ping Success");
 			}
 		});
-		Log.v(TAG, "Activity State: onCreate()");
-		super.onCreate(savedInstanceState);
+
 		setContentView(R.layout.contact_manager);
 
 		// Obtain handles to UI objects
@@ -79,27 +84,43 @@ public final class ContactManager extends Activity
 			}
 		});
 
-		//testing
+
+//		mKinveyClient.user().logout().execute();
+//		//testing
+//		mKinveyClient.user().create("tested", "pass", new KinveyUserCallback() {
+//			public void onFailure(Throwable t) {
+//				CharSequence text = "Could not sign up.";
+//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+//			}
+//			public void onSuccess(User u) {
+//				CharSequence text = u.getUsername() + ", your account has been created.";
+//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+//			}
+//		});
+
+		//Login with test account for now
 		if (!mKinveyClient.user().isUserLoggedIn()){
-			mKinveyClient.user().login(new KinveyUserCallback() {
-				@Override
-				public void onFailure(Throwable error) {
-					Log.e(TAG, "Login Failure", error);
+
+			mKinveyClient.user().login("tested", "pass", new KinveyUserCallback() {
+				public void onFailure(Throwable t) {
+					CharSequence text = "Wrong username or password.";
+					Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 				}
-				@Override
-				public void onSuccess(User result) {
-					Log.i(TAG,"Logged in a new implicit user with id: " + result.getId());
+				public void onSuccess(User u) {
+					CharSequence text = "Welcome back," + u.getUsername() + ".";
+					Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 				}
 			});
+
 		}
 
 		ContactEntity contact = new ContactEntity();
-		contact.setName("Joe");
+		contact.set("Name", "tim");
 		AsyncAppData<ContactEntity> myevents = mKinveyClient.appData("events", ContactEntity.class);
 		myevents.save(contact, new KinveyClientCallback<ContactEntity>() {
 			@Override
 			public void onFailure(Throwable e) {
-				Log.e(TAG, "failed to save event data", e); 
+				Log.e(TAG, "failed to save contact data", e); 
 			}
 			@Override
 			public void onSuccess(ContactEntity r) {
