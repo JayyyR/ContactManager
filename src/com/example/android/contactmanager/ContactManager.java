@@ -16,6 +16,11 @@
 
 package com.example.android.contactmanager;
 
+import java.io.IOException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -34,6 +39,7 @@ import android.widget.Toast;
 
 import com.kinvey.android.AsyncAppData;
 import com.kinvey.android.Client;
+import com.kinvey.android.callback.KinveyListCallback;
 import com.kinvey.android.callback.KinveyPingCallback;
 import com.kinvey.android.callback.KinveyUserCallback;
 import com.kinvey.java.User;
@@ -46,6 +52,7 @@ public final class ContactManager extends Activity
 
 	private Button mAddAccountButton;
 	private ListView mContactList;
+	private String user = "test";
 
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
@@ -60,14 +67,6 @@ public final class ContactManager extends Activity
 		//Connect to Kinvey Backend
 		final Client mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 
-		mKinveyClient.ping(new KinveyPingCallback() {
-			public void onFailure(Throwable t) {
-				Log.e(TAG, "Kinvey Ping Failed", t);
-			}
-			public void onSuccess(Boolean b) {
-				Log.d(TAG, "Kinvey Ping Success");
-			}
-		});
 
 		setContentView(R.layout.contact_manager);
 
@@ -85,7 +84,7 @@ public final class ContactManager extends Activity
 		});
 
 
-//		mKinveyClient.user().logout().execute();
+		mKinveyClient.user().logout().execute();
 //		//testing
 //		mKinveyClient.user().create("tested", "pass", new KinveyUserCallback() {
 //			public void onFailure(Throwable t) {
@@ -101,7 +100,7 @@ public final class ContactManager extends Activity
 		//Login with test account for now
 		if (!mKinveyClient.user().isUserLoggedIn()){
 
-			mKinveyClient.user().login("tested", "pass", new KinveyUserCallback() {
+			mKinveyClient.user().login(user, "pass", new KinveyUserCallback() {
 				public void onFailure(Throwable t) {
 					CharSequence text = "Wrong username or password.";
 					Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
@@ -114,9 +113,11 @@ public final class ContactManager extends Activity
 
 		}
 
+		//add contact
 		ContactEntity contact = new ContactEntity();
-		contact.set("Name", "tim");
-		AsyncAppData<ContactEntity> myevents = mKinveyClient.appData("events", ContactEntity.class);
+		contact.set("Name", "test");
+		contact.set("Phone", "1234");
+		AsyncAppData<ContactEntity> myevents = mKinveyClient.appData("contacts" + user, ContactEntity.class);
 		myevents.save(contact, new KinveyClientCallback<ContactEntity>() {
 			@Override
 			public void onFailure(Throwable e) {
@@ -127,9 +128,29 @@ public final class ContactManager extends Activity
 				Log.d(TAG, "saved data for entity "+ r.getName()); 
 			}
 		});
+		
+		//get contacts for user
+		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts" + user, ContactEntity.class);
+		myevents.get(new KinveyListCallback<ContactEntity>()     {
+		  @Override
+		  public void onSuccess(ContactEntity[] result) { 
+		    Log.v(TAG, "received "+ result.length + " events");
+		    for (ContactEntity i : result)
+		    	Log.v(TAG, "received: " + i.getName());
+		  }
+		  @Override
+		  public void onFailure(Throwable error)  { 
+		    Log.e(TAG, "failed to fetch all", error);
+		  }
+		});
 
 		// Populate the contact list
 		// populateContactList();
+		
+		JSONObject json;
+		JSONReader jsonr = new JSONReader("https://raw2.github.com/Fetchnotes/ContactManager/super-secret-stuff/contacts.json");
+		jsonr.execute();
+	    
 	}
 
 	/**

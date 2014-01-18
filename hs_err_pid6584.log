@@ -1,0 +1,119 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  Internal Error (javaClasses.cpp:136), pid=6584, tid=1796
+#  fatal error: Invalid layout of preloaded class
+#
+# JRE version:  (7.0_40-b43) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (24.0-b56 mixed mode windows-amd64 compressed oops)
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.sun.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00000000028d0800):  JavaThread "Unknown thread" [_thread_in_vm, id=1796, stack(0x00000000027d0000,0x00000000028d0000)]
+
+Stack: [0x00000000027d0000,0x00000000028d0000]
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0x00000000028d0800 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=1796, stack(0x00000000027d0000,0x00000000028d0000)]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (10 events):
+Event: 0.009 loading class 0x0000000002914eb0 done
+Event: 0.010 loading class 0x00000000029148d0 done
+Event: 0.010 loading class 0x00000000029148b0
+Event: 0.010 loading class 0x000000000291c9b0
+Event: 0.010 loading class 0x000000000291c9b0 done
+Event: 0.010 loading class 0x000000000291c9e0
+Event: 0.010 loading class 0x000000000291c9e0 done
+Event: 0.010 loading class 0x000000000291ca10
+Event: 0.010 loading class 0x000000000291ca10 done
+Event: 0.010 loading class 0x00000000029148b0 done
+
+
+Dynamic libraries:
+0x00007ff6912f0000 - 0x00007ff691323000 	C:\Program Files\Java\jdk1.7.0_40\bin\javaw.exe
+0x00007ff955930000 - 0x00007ff955ad9000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ff9554c0000 - 0x00007ff9555f9000 	C:\WINDOWS\system32\KERNEL32.DLL
+0x00007ff9530b0000 - 0x00007ff9531be000 	C:\WINDOWS\system32\KERNELBASE.dll
+0x00007ff9518e0000 - 0x00007ff95196b000 	C:\WINDOWS\system32\apphelp.dll
+0x00007ff939dc0000 - 0x00007ff939e0f000 	C:\WINDOWS\AppPatch\AppPatch64\AcGenral.DLL
+0x00007ff9535d0000 - 0x00007ff953677000 	C:\WINDOWS\system32\msvcrt.dll
+0x00007ff952b60000 - 0x00007ff952b8b000 	C:\WINDOWS\SYSTEM32\SspiCli.dll
+0x00007ff955460000 - 0x00007ff9554b1000 	C:\WINDOWS\system32\SHLWAPI.dll
+0x00007ff9536f0000 - 0x00007ff953861000 	C:\WINDOWS\system32\USER32.dll
+0x00007ff9531c0000 - 0x00007ff953336000 	C:\WINDOWS\system32\ole32.dll
+0x00007ff953cb0000 - 0x00007ff9550bf000 	C:\WINDOWS\system32\SHELL32.dll
+0x00007ff952340000 - 0x00007ff95235f000 	C:\WINDOWS\SYSTEM32\USERENV.dll
+0x00007ff953520000 - 0x00007ff9535c5000 	C:\WINDOWS\system32\ADVAPI32.dll
+0x00007ff94cc70000 - 0x00007ff94cc8b000 	C:\WINDOWS\SYSTEM32\MPR.dll
+0x00007ff955320000 - 0x00007ff955456000 	C:\WINDOWS\system32\RPCRT4.dll
+0x00007ff955810000 - 0x00007ff955867000 	C:\WINDOWS\SYSTEM32\sechost.dll
+0x00007ff953340000 - 0x00007ff953517000 	C:\WINDOWS\SYSTEM32\combase.dll
+0x00007ff955600000 - 0x00007ff955745000 	C:\WINDOWS\system32\GDI32.dll
+0x00007ff952cb0000 - 0x00007ff952cc4000 	C:\WINDOWS\SYSTEM32\profapi.dll
+0x00007ff950fc0000 - 0x00007ff951061000 	C:\WINDOWS\SYSTEM32\SHCORE.dll
+0x00007ff955870000 - 0x00007ff9558a4000 	C:\WINDOWS\system32\IMM32.DLL
+0x00007ff953910000 - 0x00007ff953a48000 	C:\WINDOWS\system32\MSCTF.dll
+0x00007ff94fb40000 - 0x00007ff94fd9a000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.9600.16384_none_62475f7becb72503\COMCTL32.dll
+0x00000000512e0000 - 0x00000000513b1000 	C:\Program Files\Java\jdk1.7.0_40\jre\bin\msvcr100.dll
+0x0000000050b10000 - 0x00000000512d9000 	C:\Program Files\Java\jdk1.7.0_40\jre\bin\server\jvm.dll
+0x00007ff94b260000 - 0x00007ff94b269000 	C:\WINDOWS\SYSTEM32\WSOCK32.dll
+0x00007ff9510e0000 - 0x00007ff9510ff000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ff955310000 - 0x00007ff955317000 	C:\WINDOWS\system32\PSAPI.DLL
+0x00007ff953680000 - 0x00007ff9536d8000 	C:\WINDOWS\system32\WS2_32.dll
+0x00007ff950850000 - 0x00007ff95087a000 	C:\WINDOWS\SYSTEM32\WINMMBASE.dll
+0x00007ff953a50000 - 0x00007ff953a59000 	C:\WINDOWS\system32\NSI.dll
+0x00007ff952d80000 - 0x00007ff952dca000 	C:\WINDOWS\SYSTEM32\cfgmgr32.dll
+0x00007ff951b30000 - 0x00007ff951b56000 	C:\WINDOWS\SYSTEM32\DEVOBJ.dll
+0x0000000050b00000 - 0x0000000050b0f000 	C:\Program Files\Java\jdk1.7.0_40\jre\bin\verify.dll
+0x0000000050ad0000 - 0x0000000050af8000 	C:\Program Files\Java\jdk1.7.0_40\jre\bin\java.dll
+0x0000000050ab0000 - 0x0000000050ac5000 	C:\Program Files\Java\jdk1.7.0_40\jre\bin\zip.dll
+
+VM Arguments:
+jvm_args: -Dfile.encoding=Cp1252 -Xbootclasspath:C:\Users\Joe\Downloads\adt-bundle-windows-x86_64-20130729\adt-bundle-windows-x86_64-20130729\sdk\platforms\android-17\android.jar 
+java_command: com.example.android.contactmanager.JSONReader
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+PATH=C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Python27;C:\Program Files (x86)\Heroku\bin;C:\Program Files (x86)\git\cmd;C:\sqlite-3_6_21;C:\Program Files (x86)\Windows Live\Shared;C:\Program Files (x86)\git\cmd;C:\Program Files\Java\jdk1.7.0_40\bin;C:\sqlite-3_6_21;C:\Program Files\Java\jdk1.7.0_40\bin
+USERNAME=Joe
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 58 Stepping 9, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 8 , 64 bit Build 9200 
+
+CPU:total 4 (2 cores per cpu, 2 threads per core) family 6 model 58 stepping 9, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, aes, erms, ht, tsc, tscinvbit, tscinv
+
+Memory: 4k page, physical 4075260k(1060928k free), swap 5713660k(1025028k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (24.0-b56) for windows-amd64 JRE (1.7.0_40-b43), built on Aug 26 2013 22:38:32 by "java_re" with unknown MS VC++:1600
+
+time: Sat Jan 18 16:37:58 2014
+elapsed time: 0 seconds
+

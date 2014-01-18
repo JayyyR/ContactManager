@@ -16,7 +16,7 @@ public class ContactEntity extends GenericJson {
 		private String Phone;
 
 		@Key
-		private String Type;
+		private String PhoneType;
 
 		public Phone(){}
 	}
@@ -27,7 +27,7 @@ public class ContactEntity extends GenericJson {
 		private String Email;
 
 		@Key
-		private String Type;
+		private String EmailType;
 
 		public Email(){}
 	}
