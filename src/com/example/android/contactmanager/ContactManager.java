@@ -16,8 +16,18 @@
 
 package com.example.android.contactmanager;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,6 +35,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -37,6 +48,8 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.kinvey.android.AsyncAppData;
 import com.kinvey.android.Client;
 import com.kinvey.android.callback.KinveyListCallback;
@@ -53,7 +66,8 @@ public final class ContactManager extends Activity
 	private Button mAddAccountButton;
 	private ListView mContactList;
 	private String user = "test";
-
+	private JSONArray json;
+	private String jsonTextFinal;
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
 	 */
@@ -150,7 +164,18 @@ public final class ContactManager extends Activity
 		JSONObject json;
 		JSONReader jsonr = new JSONReader("https://raw2.github.com/Fetchnotes/ContactManager/super-secret-stuff/contacts.json");
 		jsonr.execute();
+		
 	    
+	}
+	
+	private void createContacts(){
+		Gson gson = new Gson();
+		Type collectionType = new TypeToken<ArrayList<ContactEntity>>(){}.getType();
+		ArrayList<ContactEntity> ints2 = gson.fromJson(jsonTextFinal, collectionType);
+		Log.v("entities", "" + ints2.size());
+		for (ContactEntity x : ints2){
+			Log.v("entities", ""+ x);
+		}
 	}
 
 	/**
@@ -193,5 +218,71 @@ public final class ContactManager extends Activity
 	protected void launchContactAdder() {
 		Intent i = new Intent(this, ContactAdder.class);
 		startActivity(i);
+	}
+	
+	/*private class to grab json array from url*/
+	private class JSONReader extends AsyncTask<String, Void, String>{
+
+		String url;
+		
+		public JSONReader(String url){
+			this.url = url;
+		};
+		
+		@Override
+		protected void onPreExecute(){
+
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+			try {
+				json = readJsonFromUrl(url);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			return null;
+		}
+	 
+
+		@Override
+		protected void onPostExecute(String result){
+			super.onPostExecute(result);
+			
+			Log.v("length", json.toString());
+			createContacts();
+		}
+
+
+		private String readAll(Reader rd) throws IOException {
+			StringBuilder sb = new StringBuilder();
+			int cp;
+			while ((cp = rd.read()) != -1) {
+				sb.append((char) cp);
+			}
+			return sb.toString();
+		}
+		
+
+		public JSONArray readJsonFromUrl(String url) throws IOException, JSONException {
+			InputStream is = new URL(url).openStream();
+			try {
+				BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+				String jsonText = readAll(rd);
+				jsonTextFinal = jsonText;
+				JSONArray json = new JSONArray(jsonText);
+				Log.v("hie", json.toString());
+				
+				return json;
+			} finally {
+				is.close();
+			}
+		}
+
+
 	}
 }
