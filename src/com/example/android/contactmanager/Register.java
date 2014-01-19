@@ -33,6 +33,7 @@ public class Register extends Activity {
 		mPasswordField = (EditText) findViewById(R.id.passEditText);
 		mRegisterButton = (Button) findViewById(R.id.regButton);
 
+		//set register button
 		mRegisterButton.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -41,12 +42,14 @@ public class Register extends Activity {
 				String username = mUsernameField.getText().toString();
 				String password = mPasswordField.getText().toString();
 
+				//create teh user
 				mKinveyClient.user().create(username, password, new KinveyUserCallback() {
 					public void onFailure(Throwable t) {
 						CharSequence text = "Could not sign up.";
 						Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 					}
 					public void onSuccess(User u) {
+						//on success launch back to login page
 						CharSequence text = u.getUsername() + ", your account has been created.";
 						Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 						launchLogin();
@@ -64,6 +67,7 @@ public class Register extends Activity {
 		return true;
 	}
 	
+	//login page launcher
 	protected void launchLogin() {
 		Intent i = new Intent(this, Login.class);
 		startActivity(i);

@@ -16,33 +16,17 @@
 
 package com.example.android.contactmanager;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AuthenticatorDescription;
-import android.accounts.OnAccountsUpdateListener;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ContentProviderOperation;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -75,11 +59,14 @@ public final class ContactAdder extends Activity
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
-		user = getIntent().getExtras().getString("user");
-		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 		Log.v(TAG, "Activity State: onCreate()");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contact_adder);
+		
+		//get active user
+		user = getIntent().getExtras().getString("user");
+		//connect with kinvey backend
+		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 
 		// Obtain handles to UI objects
 		mContactNameEditText = (EditText) findViewById(R.id.contactNameEditText);
@@ -103,10 +90,6 @@ public final class ContactAdder extends Activity
 		mContactEmailTypes.add(ContactsContract.CommonDataKinds.Email.TYPE_WORK);
 		mContactEmailTypes.add(ContactsContract.CommonDataKinds.Email.TYPE_MOBILE);
 		mContactEmailTypes.add(ContactsContract.CommonDataKinds.Email.TYPE_OTHER);
-
-		//        // Prepare model for account spinner
-		//        mAccounts = new ArrayList<AccountData>();
-		//        mAccountAdapter = new AccountAdapter(this, mAccounts);
 
 		// Populate list of account types for phone
 		ArrayAdapter<String> adapter;
@@ -135,10 +118,6 @@ public final class ContactAdder extends Activity
 		}
 		mContactEmailTypeSpinner.setAdapter(adapter);
 		mContactEmailTypeSpinner.setPrompt(getString(R.string.selectLabel));
-
-		// Prepare the system account manager. On registering the listener below, we also ask for
-		// an initial callback to pre-populate the account list.
-		//        AccountManager.get(this).addOnAccountsUpdatedListener(this, null, true);
 
 		// Register handlers for UI elements
 		mContactSaveButton.setOnClickListener(new View.OnClickListener() {
@@ -172,8 +151,12 @@ public final class ContactAdder extends Activity
 
 		//create a contact entity object to save
 		ContactEntity contact = new ContactEntity();
+		
+		//set attributes for the contact
 		contact.set("name", name);
 		contact.put("account", user);
+		
+		//create phone entity to put in contact
 		ContactEntity.phone phoneEntity = new ContactEntity.phone();
 		phoneEntity.set("phone", phone);
 		switch(phoneType) {
@@ -190,6 +173,8 @@ public final class ContactAdder extends Activity
 			phoneEntity.set("type", "other");
 			break;
 		}
+		
+		//create email entity to put in contact
 		ContactEntity.email emailEntity = new ContactEntity.email();
 		emailEntity.set("email", email);
 		switch(emailType) {
@@ -206,7 +191,8 @@ public final class ContactAdder extends Activity
 			emailEntity.set("type", "other");
 			break;
 		}
-		//add entities to arraylists to account for how information is read on the contact list
+		
+		//add entities to arraylists to account for how information should be stored in the backend (in a list)
 		ArrayList<ContactEntity.phone> phones = new ArrayList<ContactEntity.phone>();
 		ArrayList<ContactEntity.email> emails = new ArrayList<ContactEntity.email>();
 		phones.add(phoneEntity);
@@ -215,7 +201,6 @@ public final class ContactAdder extends Activity
 		//set the phone and emails to the contact entity object
 		contact.set("phone", phones);
 		contact.set("email", emails);
-		Log.v(TAG, "saving: "+contact);
 
 		//save the contact
 		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);

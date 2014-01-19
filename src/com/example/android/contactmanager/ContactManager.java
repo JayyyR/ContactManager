@@ -16,23 +16,10 @@
 
 package com.example.android.contactmanager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,37 +27,19 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
-
-import com.example.android.contactmanager.ContactEntity.email;
 import com.google.api.client.util.ArrayMap;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.kinvey.android.AsyncAppData;
 import com.kinvey.android.Client;
 import com.kinvey.android.callback.KinveyListCallback;
-import com.kinvey.android.callback.KinveyPingCallback;
-import com.kinvey.android.callback.KinveyUserCallback;
 import com.kinvey.java.Query;
-import com.kinvey.java.User;
-import com.kinvey.java.core.KinveyClientCallback;
 
 public final class ContactManager extends Activity
 {
@@ -97,11 +66,9 @@ public final class ContactManager extends Activity
 
 		//grab user
 		user = getIntent().getExtras().getString("user");
-		Log.v(TAG, "username in manager: " + user);
-		
+
 		//Connect to Kinvey Backend
 		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
-
 
 		setContentView(R.layout.contact_manager);
 
@@ -127,7 +94,7 @@ public final class ContactManager extends Activity
 			}
 		});
 		mLogoutButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				mKinveyClient.user().logout().execute();
@@ -135,23 +102,37 @@ public final class ContactManager extends Activity
 			}
 		});
 
-
-		
-
-
 		//grab and populate contacts
 		getContacts();
 	}
 
+	/**
+	 * Obtains the contact list for the currently selected account.
+	 */
+	private void getContacts()
+	{
 
-	//custom comparator for sorting contacts by name
-	public class CustomComparator implements Comparator<ContactEntity> {
-		@Override
-		public int compare(ContactEntity o1, ContactEntity o2) {
-			return o1.getName().compareToIgnoreCase(o2.getName());
-		}
+		//get contacts for user
+		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
+		Query userQuery = mKinveyClient.query();
+		Log.v(TAG, "querying for: " + user);
+		userQuery.equals("account", user);	//only get contacts associated with correct account
+		final ProgressDialog progressDialog = ProgressDialog.show(this, "Getting Contacts", "just a moment");
+		contacts.get(userQuery, new KinveyListCallback<ContactEntity>()     {
+			@Override
+			public void onSuccess(ContactEntity[] result) { 
+				progressDialog.dismiss();
+				//on success, populate the listview
+				populateContactList(result);
+			}
+			@Override
+			public void onFailure(Throwable error)  { 
+				progressDialog.dismiss();
+				Log.e(TAG, "failed to fetch all", error);
+			}
+		});
+
 	}
-
 
 
 	/**
@@ -167,9 +148,10 @@ public final class ContactManager extends Activity
 		for (ContactEntity x : contactsSorted){
 			contactNames.add(x.getName());
 		}
+		
+		//create simple adapter for displaying contacts
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,  android.R.layout.simple_list_item_1, android.R.id.text1, contactNames);
 		mContactList.setAdapter(adapter);
-
 		mContactList.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -178,14 +160,13 @@ public final class ContactManager extends Activity
 
 				//create popup dialog with contact info
 				AlertDialog.Builder builder = new AlertDialog.Builder(context);
-				
+
 				//set title as contact's name
 				builder.setTitle(contactsSorted.get(pos).getName());
-				
+
 				ListView contactData = new ListView(context);
 				ArrayList<String> content = new ArrayList<String>();
-				
-				Log.v("test", ""+contactsSorted.get(pos));
+
 				//add emails
 				ArrayList<ArrayMap> emails =  (ArrayList<ArrayMap>) contactsSorted.get(pos).get("email");
 				for (int i = 0; i <emails.size(); i++){
@@ -197,6 +178,7 @@ public final class ContactManager extends Activity
 					content.add((String)phones.get(i).get("type") + " phone: " + (String)phones.get(i).get("phone"));
 				}
 
+				//set adapter for listview
 				ArrayAdapter<String> modeAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, content);
 				contactData.setAdapter(modeAdapter);
 				builder.setView(contactData);
@@ -209,36 +191,7 @@ public final class ContactManager extends Activity
 		});
 	}
 
-	/**
-	 * Obtains the contact list for the currently selected account.
-	 */
-	private void getContacts()
-	{
 
-		//get contacts for user
-		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
-		Query myQuery = mKinveyClient.query();
-		Log.v(TAG, "querying for: " + user);
-		myQuery.equals("account", user);	//only get contacts associated with correct account
-		final ProgressDialog progressDialog = ProgressDialog.show(this, "Getting Contacts", "just a moment");
-		contacts.get(myQuery, new KinveyListCallback<ContactEntity>()     {
-			@Override
-			public void onSuccess(ContactEntity[] result) { 
-				progressDialog.dismiss();
-				//Log.v(TAG, "received "+ result.length + " events");
-				for (ContactEntity i : result)
-					//Log.v(TAG, "received: " + i.getName());
-				//on success, populate the listview
-				populateContactList(result);
-			}
-			@Override
-			public void onFailure(Throwable error)  { 
-				progressDialog.dismiss();
-				Log.e(TAG, "failed to fetch all", error);
-			}
-		});
-
-	}
 
 	/**
 	 * Launches the ContactAdder activity to add a new contact to the selected account.
@@ -257,7 +210,7 @@ public final class ContactManager extends Activity
 		i.putExtra("user", user);
 		startActivity(i);
 	}
-	
+
 	/**
 	 * Launches the Login activity.
 	 */
@@ -265,7 +218,18 @@ public final class ContactManager extends Activity
 		Intent i = new Intent(this, Login.class);
 		startActivity(i);
 	}
-	
+
+
+	//custom comparator for sorting contacts by name
+	public class CustomComparator implements Comparator<ContactEntity> {
+		@Override
+		public int compare(ContactEntity o1, ContactEntity o2) {
+			return o1.getName().compareToIgnoreCase(o2.getName());
+		}
+	}
+
+
+
 	//override back button so user can't back into login screen
 	@Override
 	public void onBackPressed() {

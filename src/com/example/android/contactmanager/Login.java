@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -38,7 +37,8 @@ public class Login extends Activity {
 		//check if user is logged in and if they are, go to contact manager page
 		if (mKinveyClient.user().isUserLoggedIn()){
 			final ProgressDialog progressDialog = ProgressDialog.show(this, "Logging in with Saved Credentials", "just a moment");
-			//retrieve updated info for user
+			
+			//retrieve updated info for user, had to do this in order to get current user's username
 			mKinveyClient.user().retrieve(new KinveyUserCallback() {
 				@Override
 				public void onFailure(Throwable e) {
@@ -61,8 +61,6 @@ public class Login extends Activity {
 		mLoginButton = (Button) findViewById(R.id.loginButton);
 		mRegisterButton = (Button) findViewById(R.id.registerButton);
 
-
-
 		//set login button
 		mLoginButton.setOnClickListener(new View.OnClickListener() {
 
@@ -71,6 +69,8 @@ public class Login extends Activity {
 
 				username = mUsernameField.getText().toString();
 				String password = mPasswordField.getText().toString();
+				
+				//login the user
 				mKinveyClient.user().login(username, password, new KinveyUserCallback() {
 					public void onFailure(Throwable t) {
 						CharSequence text = "Wrong username or password.";
@@ -92,7 +92,6 @@ public class Login extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				launchRegisterActivity();
 			}
 		});
@@ -107,12 +106,14 @@ public class Login extends Activity {
 		return true;
 	}
 
+	//launch into main contact view
 	protected void launchContactManager(){
 		Intent i = new Intent(this, ContactManager.class);
 		i.putExtra("user", username);
 		startActivity(i);
 	}
 
+	//launch register activity
 	protected void launchRegisterActivity(){
 		Intent i = new Intent(this, Register.class);
 		startActivity(i);

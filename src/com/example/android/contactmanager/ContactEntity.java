@@ -33,7 +33,7 @@ public class ContactEntity extends GenericJson {
 	}
 	
 	public void setName(String name){
-		name = name;
+		this.name = name;
 	}
 	
 	public String getName(){
