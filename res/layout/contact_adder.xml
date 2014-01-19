@@ -39,7 +39,8 @@
             <EditText android:id="@+id/contactPhoneEditText"
                       android:layout_height="wrap_content"
                       android:layout_width="wrap_content"
-                      android:layout_weight="1"/>
+                      android:layout_weight="1"
+                      android:inputType="phone"/>
             <Spinner android:id="@+id/contactPhoneTypeSpinner"
                      android:layout_width="wrap_content"
                      android:layout_height="wrap_content"/>
@@ -53,7 +54,8 @@
             <EditText android:id="@+id/contactEmailEditText"
                       android:layout_height="wrap_content"
                       android:layout_width="wrap_content"
-                      android:layout_weight="1"/>
+                      android:layout_weight="1"
+                      android:inputType="textEmailAddress"/>
             <Spinner android:id="@+id/contactEmailTypeSpinner"
                      android:layout_width="wrap_content"
                      android:layout_height="wrap_content"/>
