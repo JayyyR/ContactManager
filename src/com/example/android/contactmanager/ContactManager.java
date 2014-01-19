@@ -193,18 +193,23 @@ public final class ContactManager extends Activity
 
 				//create popup dialog with contact info
 				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				
+				//set title as contact's name
 				builder.setTitle(contactsSorted.get(pos).getName());
+				
 				ListView contactData = new ListView(context);
 				ArrayList<String> content = new ArrayList<String>();
+				
+				Log.v("test", ""+contactsSorted.get(pos));
 				//add emails
 				ArrayList<ArrayMap> emails =  (ArrayList<ArrayMap>) contactsSorted.get(pos).get("email");
 				for (int i = 0; i <emails.size(); i++){
-					content.add((String)emails.get(i).get("type") + ": " + (String)emails.get(i).get("email"));
+					content.add((String)emails.get(i).get("type") + " email: " + (String)emails.get(i).get("email"));
 				}
 				//add phone numbers
 				ArrayList<ArrayMap> phones =  (ArrayList<ArrayMap>) contactsSorted.get(pos).get("phone");
 				for (int i = 0; i <phones.size(); i++){
-					content.add((String)phones.get(i).get("type") + ": " + (String)phones.get(i).get("phone"));
+					content.add((String)phones.get(i).get("type") + " phone: " + (String)phones.get(i).get("phone"));
 				}
 
 				ArrayAdapter<String> modeAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, content);
@@ -213,8 +218,6 @@ public final class ContactManager extends Activity
 				final Dialog dialog = builder.create();
 
 				dialog.show();
-
-				Log.v(TAG, "clicked item: " + pos + ": "  + contactsSorted.get(pos).get("email"));
 
 
 			}
@@ -255,6 +258,7 @@ public final class ContactManager extends Activity
 	 */
 	protected void launchContactAdder() {
 		Intent i = new Intent(this, ContactAdder.class);
+		i.putExtra("user", user);
 		startActivity(i);
 	}
 
