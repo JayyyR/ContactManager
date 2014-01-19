@@ -122,10 +122,12 @@ public class ContactImporter extends Activity {
 		}
 		catch(JsonSyntaxException e){
 			e.printStackTrace();
+			originalProgDialog.dismiss();
 			Toast.makeText(activity, "Please enter valid URL", Toast.LENGTH_SHORT).show();
 		}
 		catch(NullPointerException e){
 			e.printStackTrace();
+			originalProgDialog.dismiss();
 			Toast.makeText(activity, "Please enter valid URL", Toast.LENGTH_SHORT).show();
 		}
 

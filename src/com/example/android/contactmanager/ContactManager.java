@@ -253,7 +253,7 @@ public final class ContactManager extends Activity
 	 * Launches the Importer activity to import contacts to selected account.
 	 */
 	protected void launchImporter() {
-		Intent i = new Intent(this, ContactImporter.class);
+		Intent i = new Intent(this, ContactImporter.class); 
 		i.putExtra("user", user);
 		startActivity(i);
 	}
@@ -266,7 +266,7 @@ public final class ContactManager extends Activity
 		startActivity(i);
 	}
 	
-	//override back button so usre can't back into login screen
+	//override back button so user can't back into login screen
 	@Override
 	public void onBackPressed() {
 	}

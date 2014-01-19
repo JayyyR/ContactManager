@@ -16,80 +16,80 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class Login extends Activity {
-	
+
 	private Client mKinveyClient;
 	private EditText mUsernameField;
 	private EditText mPasswordField;
 	private Button mLoginButton;
 	private Button mRegisterButton;
 	private String username;
-	
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		
+
 
 		//Connect to Kinvey Backend
 		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
-		
+
 
 		//check if user is logged in and if they are, go to contact manager page
 		if (mKinveyClient.user().isUserLoggedIn()){
 			final ProgressDialog progressDialog = ProgressDialog.show(this, "Logging in with Saved Credentials", "just a moment");
 			//retrieve updated info for user
 			mKinveyClient.user().retrieve(new KinveyUserCallback() {
-		        @Override
-		        public void onFailure(Throwable e) {
-		        	progressDialog.dismiss();
-		        }
-		        @Override
-		        public void onSuccess(User user) { 
-		        	progressDialog.dismiss();
-		        	username = user.getUsername();
+				@Override
+				public void onFailure(Throwable e) {
+					progressDialog.dismiss();
+				}
+				@Override
+				public void onSuccess(User user) { 
+					progressDialog.dismiss();
+					username = user.getUsername();
 					launchContactManager();
-		        	
-		        }
-		    });
-			
+
+				}
+			});
+
 		}
-		
+
 		//grab UI elements
 		mUsernameField = (EditText) findViewById(R.id.usernameEditText);
 		mPasswordField = (EditText) findViewById(R.id.passwordEditText);
 		mLoginButton = (Button) findViewById(R.id.loginButton);
 		mRegisterButton = (Button) findViewById(R.id.registerButton);
-		
-		
-		
+
+
+
 		//set login button
 		mLoginButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
-				
+
 				username = mUsernameField.getText().toString();
 				String password = mPasswordField.getText().toString();
 				mKinveyClient.user().login(username, password, new KinveyUserCallback() {
 					public void onFailure(Throwable t) {
 						CharSequence text = "Wrong username or password.";
 						Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-						
+
 					}
 					public void onSuccess(User u) {
-						CharSequence text = "Welcome back," + u.getUsername() + ".";
+						CharSequence text = "Welcome back, " + u.getUsername() + ".";
 						Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 						launchContactManager();
 					}
 				});
-				
+
 			}
 		});
-		
+
 		//set register button
 		mRegisterButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -106,16 +106,22 @@ public class Login extends Activity {
 		getMenuInflater().inflate(R.menu.login, menu);
 		return true;
 	}
-	
+
 	protected void launchContactManager(){
 		Intent i = new Intent(this, ContactManager.class);
 		i.putExtra("user", username);
 		startActivity(i);
 	}
-	
+
 	protected void launchRegisterActivity(){
 		Intent i = new Intent(this, Register.class);
 		startActivity(i);
 	}
+
+	//override back button so user can't back
+	@Override
+	public void onBackPressed() {
+	}
+
 
 }
