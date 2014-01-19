@@ -16,6 +16,9 @@ import org.json.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.kinvey.android.AsyncAppData;
+import com.kinvey.android.Client;
+import com.kinvey.java.core.KinveyClientCallback;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,16 +31,23 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class ContactImporter extends Activity {
-	
+
+	public static final String TAG = "ContactImporter";
+
 	private String jsonTextFinal;
-	Activity activity = this;
+	private Activity activity = this;
+	private String user;
+	private Client mKinveyClient;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contact_importer);
-		
-		
+
+		user = getIntent().getExtras().getString("user");
+		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
+
+		Log.v(TAG, user);
 		//on button click make the call
 		Button importButton = (Button) findViewById(R.id.importButton);
 		importButton.setOnClickListener(new OnClickListener(){
@@ -47,10 +57,10 @@ public class ContactImporter extends Activity {
 				JSONObject json;
 				JSONReader jsonr = new JSONReader("https://raw2.github.com/Fetchnotes/ContactManager/super-secret-stuff/contacts.json");
 				jsonr.execute();
-				
+
 			}
 		});
-	
+
 	}
 
 	@Override
@@ -59,28 +69,45 @@ public class ContactImporter extends Activity {
 		getMenuInflater().inflate(R.menu.contact_importer, menu);
 		return true;
 	}
-	
+
 	//Create contact entities from jsonString
 	private void createContacts(){
 		Gson gson = new Gson();
 		Type collectionType = new TypeToken<ArrayList<ContactEntity>>(){}.getType();
-		ArrayList<ContactEntity> ints2 = gson.fromJson(jsonTextFinal, collectionType);
-		Log.v("entities", "" + ints2.size());
-		for (ContactEntity x : ints2){
-			Log.v("entities", ""+ x.getName());
+		ArrayList<ContactEntity> contactsFromURL = gson.fromJson(jsonTextFinal, collectionType);
+		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
+
+		for (ContactEntity x : contactsFromURL){
+			x.put("account", user);
+
+			//save each contact to Kinvey
+
+			contacts.save(x, new KinveyClientCallback<ContactEntity>() {
+				@Override
+				public void onFailure(Throwable e) {
+					Log.e(TAG, "failed to save contact data", e); 
+				}
+				@Override
+				public void onSuccess(ContactEntity r) {
+					Log.d(TAG, "saved data for entity "+ r.getName()); 
+				}
+			});
+
+
 		}
+
 	}
-	
+
 	/*private class to grab json array from url*/
 	private class JSONReader extends AsyncTask<String, Void, String>{
 
 		String url;
 		ProgressDialog progressDialog;
-		
+
 		public JSONReader(String url){
 			this.url = url;
 		};
-		
+
 		@Override
 		protected void onPreExecute(){
 			progressDialog= ProgressDialog.show(activity, "Importing Contacts","Please Wait", true);
@@ -99,7 +126,7 @@ public class ContactImporter extends Activity {
 			} 
 			return null;
 		}
-	 
+
 
 		@Override
 		protected void onPostExecute(String result){
@@ -108,7 +135,7 @@ public class ContactImporter extends Activity {
 			//after it's done create contact entities
 			createContacts();
 		}
-		
+
 
 		public void readJsonFromUrl(String url) throws IOException, JSONException {
 			InputStream is = new URL(url).openStream();

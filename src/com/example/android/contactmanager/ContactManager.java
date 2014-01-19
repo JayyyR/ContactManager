@@ -66,6 +66,7 @@ public final class ContactManager extends Activity
 	private Button mAddAccountButton;
 	private Button mImportContactsButton;
 	private ListView mContactList;
+	private Client mKinveyClient;
 	private String user = "test";
 	
 	/**
@@ -79,7 +80,7 @@ public final class ContactManager extends Activity
 
 
 		//Connect to Kinvey Backend
-		final Client mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
+		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 
 
 		setContentView(R.layout.contact_manager);
@@ -138,25 +139,10 @@ public final class ContactManager extends Activity
 
 		}
 
-		//add contact
-		ContactEntity contact = new ContactEntity();
-		contact.set("Name", "test");
-		contact.set("Phone", "1234");
-		AsyncAppData<ContactEntity> myevents = mKinveyClient.appData("contacts" + user, ContactEntity.class);
-		myevents.save(contact, new KinveyClientCallback<ContactEntity>() {
-			@Override
-			public void onFailure(Throwable e) {
-				Log.e(TAG, "failed to save contact data", e); 
-			}
-			@Override
-			public void onSuccess(ContactEntity r) {
-				Log.d(TAG, "saved data for entity "+ r.getName()); 
-			}
-		});
 		
 		//get contacts for user
 		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts" + user, ContactEntity.class);
-		myevents.get(new KinveyListCallback<ContactEntity>()     {
+		contacts.get(new KinveyListCallback<ContactEntity>()     {
 		  @Override
 		  public void onSuccess(ContactEntity[] result) { 
 		    Log.v(TAG, "received "+ result.length + " events");
@@ -226,6 +212,7 @@ public final class ContactManager extends Activity
 	 */
 	protected void launchImporter() {
 		Intent i = new Intent(this, ContactImporter.class);
+		i.putExtra("user", user);
 		startActivity(i);
 	}
 	
