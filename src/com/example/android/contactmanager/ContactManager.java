@@ -25,15 +25,20 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -41,7 +46,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -51,6 +59,8 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.example.android.contactmanager.ContactEntity.email;
+import com.google.api.client.util.ArrayMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.kinvey.android.AsyncAppData;
@@ -72,6 +82,7 @@ public final class ContactManager extends Activity
 	private ListView mContactList;
 	private Client mKinveyClient;
 	private String user = "test";
+	private Context context = this;
 
 
 	/**
@@ -143,41 +154,79 @@ public final class ContactManager extends Activity
 
 		}
 
-
-
-
-		// Populate the contact list
-		// populateContactList();
+		//grab and populate contacts
 		getContacts();
+	}
 
 
-
+	//custom comparator for sorting contacts by name
+	public class CustomComparator implements Comparator<ContactEntity> {
+		@Override
+		public int compare(ContactEntity o1, ContactEntity o2) {
+			return o1.getName().compareTo(o2.getName());
+		}
 	}
 
 
 
 	/**
-	 * Populate the contact list based on account currently selected in the account spinner.
+	 * Populate the contact list based on account currently signed in
 	 */
 	private void populateContactList(ContactEntity[] contactList) {
 		// Build adapter with contact entries
+		final ArrayList<ContactEntity> contactsSorted = new ArrayList<ContactEntity>(Arrays.asList(contactList));
+
+		//sort contacts on name
+		Collections.sort(contactsSorted, new CustomComparator());
 		ArrayList<String> contactNames = new ArrayList<String>();
-		for (ContactEntity x : contactList){
+		for (ContactEntity x : contactsSorted){
 			contactNames.add(x.getName());
 		}
-		Collections.sort(contactNames);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,  android.R.layout.simple_list_item_1, android.R.id.text1, contactNames);
 		mContactList.setAdapter(adapter);
+
+		mContactList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int pos,
+					long arg3) {
+
+				//create popup dialog with contact info
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(contactsSorted.get(pos).getName());
+				ListView contactData = new ListView(context);
+				ArrayList<String> content = new ArrayList<String>();
+				//add emails
+				ArrayList<ArrayMap> emails =  (ArrayList<ArrayMap>) contactsSorted.get(pos).get("email");
+				for (int i = 0; i <emails.size(); i++){
+					content.add((String)emails.get(i).get("type") + ": " + (String)emails.get(i).get("email"));
+				}
+				//add phone numbers
+				ArrayList<ArrayMap> phones =  (ArrayList<ArrayMap>) contactsSorted.get(pos).get("phone");
+				for (int i = 0; i <phones.size(); i++){
+					content.add((String)phones.get(i).get("type") + ": " + (String)phones.get(i).get("phone"));
+				}
+
+				ArrayAdapter<String> modeAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, android.R.id.text1, content);
+				contactData.setAdapter(modeAdapter);
+				builder.setView(contactData);
+				final Dialog dialog = builder.create();
+
+				dialog.show();
+
+				Log.v(TAG, "clicked item: " + pos + ": "  + contactsSorted.get(pos).get("email"));
+
+
+			}
+		});
 	}
 
 	/**
 	 * Obtains the contact list for the currently selected account.
-	 *
-	 * @return A cursor for for accessing the contact list.
 	 */
 	private void getContacts()
 	{
-		
+
 		//get contacts for user
 		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
 		Query myQuery = mKinveyClient.query();
@@ -198,7 +247,7 @@ public final class ContactManager extends Activity
 				Log.e(TAG, "failed to fetch all", error);
 			}
 		});
-		
+
 	}
 
 	/**

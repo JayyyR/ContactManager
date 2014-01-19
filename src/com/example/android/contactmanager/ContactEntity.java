@@ -10,7 +10,7 @@ public class ContactEntity extends GenericJson {
 
 	public ContactEntity(){}
 
-	private static class phone extends GenericJson {     
+	public static class phone extends GenericJson {     
 
 		@Key
 		private String phone;
@@ -21,13 +21,13 @@ public class ContactEntity extends GenericJson {
 		public phone(){}
 	}
 
-	private static class email extends GenericJson {     
+	public static class email extends GenericJson {     
 
 		@Key
-		private String email;
+		public String email;
 
 		@Key
-		private String type;
+		public String type;
 
 		public email(){}
 	}
