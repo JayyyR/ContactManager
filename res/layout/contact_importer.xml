@@ -9,7 +9,7 @@
     tools:context=".ContactImporter" >
 
     <EditText
-        android:id="@+id/editText1"
+        android:id="@+id/urlEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
@@ -19,23 +19,22 @@
         <requestFocus />
     </EditText>
 
-    <TextView
-        android:id="@+id/importUrl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/editText1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="26dp"
-        android:text="@string/importUrlLabel"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
     <Button
         android:id="@+id/importButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/editText1"
+        android:layout_below="@+id/urlEditText"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
         android:text="@string/importButtonLabel" />
+
+    <TextView
+        android:id="@+id/importUrl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/urlEditText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:text="@string/importUrlLabel"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </RelativeLayout>

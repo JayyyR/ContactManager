@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.kinvey.android.AsyncAppData;
 import com.kinvey.android.Client;
@@ -24,11 +25,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 public class ContactImporter extends Activity {
 
@@ -38,11 +42,15 @@ public class ContactImporter extends Activity {
 	private Activity activity = this;
 	private String user;
 	private Client mKinveyClient;
+	private EditText mURLEditText;
+	ProgressDialog originalProgDialog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.contact_importer);
+
+		mURLEditText = (EditText) findViewById(R.id.urlEditText);
 
 		user = getIntent().getExtras().getString("user");
 		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
@@ -54,8 +62,9 @@ public class ContactImporter extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				JSONObject json;
-				JSONReader jsonr = new JSONReader("https://raw2.github.com/Fetchnotes/ContactManager/super-secret-stuff/contacts.json");
+				String urlString = mURLEditText.getText().toString();
+				Log.v(TAG, "url string is: " + urlString);
+				JSONReader jsonr = new JSONReader(urlString);
 				jsonr.execute();
 
 			}
@@ -74,27 +83,52 @@ public class ContactImporter extends Activity {
 	private void createContacts(){
 		Gson gson = new Gson();
 		Type collectionType = new TypeToken<ArrayList<ContactEntity>>(){}.getType();
-		ArrayList<ContactEntity> contactsFromURL = gson.fromJson(jsonTextFinal, collectionType);
-		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
+		try{
+			ArrayList<ContactEntity> contactsFromURL = gson.fromJson(jsonTextFinal, collectionType);
+			AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
 
-		for (ContactEntity x : contactsFromURL){
-			x.put("account", user);
+			final int numOfContacts = contactsFromURL.size();
+			int contactCount = 0;
+			Log.v(TAG, "num of contacts was : " + numOfContacts);
+			for (ContactEntity contact : contactsFromURL){
+				contact.put("account", user);	//attach the calling account to this contact
 
-			//save each contact to Kinvey
+				//save each contact to Kinvey
+				contactCount++;				//keep track of contact number so when all have imported, we can get rid of dialog
+				final int conCount = contactCount;
+				contacts.save(contact, new KinveyClientCallback<ContactEntity>() {
+					@Override
+					public void onFailure(Throwable e) {
+						Log.e(TAG, "failed to save contact data", e);
+						Log.v(TAG, "Contact count is: " + conCount);
+						if (conCount >= numOfContacts){		// when contact count equals the number of contacts, dismiss our dialog and go back
+							originalProgDialog.dismiss();
+							goBackToContactManager();
+						}
+					}
+					@Override
+					public void onSuccess(ContactEntity r) {
+						Log.d(TAG, "saved data for entity "+ r.getName());
+						Log.v(TAG, "Contact count is: " + conCount);
+						if (conCount >= numOfContacts){		// when contact count equals the number of contacts, dismiss our dialog and go back
+							originalProgDialog.dismiss();
+							goBackToContactManager();
+						}
+					}
+				});
 
-			contacts.save(x, new KinveyClientCallback<ContactEntity>() {
-				@Override
-				public void onFailure(Throwable e) {
-					Log.e(TAG, "failed to save contact data", e); 
-				}
-				@Override
-				public void onSuccess(ContactEntity r) {
-					Log.d(TAG, "saved data for entity "+ r.getName()); 
-				}
-			});
 
-
+			}
 		}
+		catch(JsonSyntaxException e){
+			e.printStackTrace();
+			Toast.makeText(activity, "Please enter valid URL", Toast.LENGTH_SHORT).show();
+		}
+		catch(NullPointerException e){
+			e.printStackTrace();
+			Toast.makeText(activity, "Please enter valid URL", Toast.LENGTH_SHORT).show();
+		}
+
 
 	}
 
@@ -102,7 +136,7 @@ public class ContactImporter extends Activity {
 	private class JSONReader extends AsyncTask<String, Void, String>{
 
 		String url;
-		ProgressDialog progressDialog;
+
 
 		public JSONReader(String url){
 			this.url = url;
@@ -110,7 +144,7 @@ public class ContactImporter extends Activity {
 
 		@Override
 		protected void onPreExecute(){
-			progressDialog= ProgressDialog.show(activity, "Importing Contacts","Please Wait", true);
+			originalProgDialog= ProgressDialog.show(activity, "Importing Contacts","Please Wait", true);
 		}
 
 		@Override
@@ -118,10 +152,10 @@ public class ContactImporter extends Activity {
 			try {
 				readJsonFromUrl(url);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			} 
 			return null;
@@ -131,12 +165,12 @@ public class ContactImporter extends Activity {
 		@Override
 		protected void onPostExecute(String result){
 			super.onPostExecute(result);
-			progressDialog.dismiss();
+
 			//after it's done create contact entities
 			createContacts();
 		}
 
-
+		//helper method to read json content from url, stores json in global string
 		public void readJsonFromUrl(String url) throws IOException, JSONException {
 			InputStream is = new URL(url).openStream();
 			try {
@@ -146,7 +180,8 @@ public class ContactImporter extends Activity {
 				while ((cp = rd.read()) != -1) {
 					sb.append((char) cp);
 				}
-				jsonTextFinal = sb.toString();
+				jsonTextFinal = sb.toString();	//store the json as a string
+				Log.v(TAG, jsonTextFinal);
 
 			} finally {
 				is.close();
@@ -154,6 +189,13 @@ public class ContactImporter extends Activity {
 		}
 
 
+	}
+
+	//method that will refresh contact list
+	protected void goBackToContactManager(){
+		Intent i = new Intent(this, ContactManager.class);
+		i.putExtra("user", user);
+		startActivity(i);
 	}
 
 }

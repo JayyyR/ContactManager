@@ -6,6 +6,7 @@ import com.kinvey.java.User;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
@@ -36,15 +37,16 @@ public class Login extends Activity {
 
 		//check if user is logged in and if they are, go to contact manager page
 		if (mKinveyClient.user().isUserLoggedIn()){
-			
+			final ProgressDialog progressDialog = ProgressDialog.show(this, "Logging in with Saved Credentials", "just a moment");
 			//retrieve updated info for user
 			mKinveyClient.user().retrieve(new KinveyUserCallback() {
 		        @Override
 		        public void onFailure(Throwable e) {
-		        	
+		        	progressDialog.dismiss();
 		        }
 		        @Override
 		        public void onSuccess(User user) { 
+		        	progressDialog.dismiss();
 		        	username = user.getUsername();
 					launchContactManager();
 		        	

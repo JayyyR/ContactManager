@@ -22,11 +22,6 @@
         <TableRow>
             <TextView android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
-                      android:text="@string/targetAccountLabel"/>
-        </TableRow>
-        <TableRow>
-            <TextView android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"
                       android:text="@string/contactNameLabel"/>
         </TableRow>
         <TableRow>

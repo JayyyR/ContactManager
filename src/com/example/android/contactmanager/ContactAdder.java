@@ -172,7 +172,7 @@ public final class ContactAdder extends Activity
 		//create a contact entity object to save
 		ContactEntity contact = new ContactEntity();
 		contact.set("name", name);
-		contact.set("account", user);
+		contact.put("account", user);
 		ContactEntity.phone phoneEntity = new ContactEntity.phone();
 		phoneEntity.set("phone", phone);
 		switch(phoneType) {
