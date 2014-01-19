@@ -79,9 +79,10 @@ public final class ContactManager extends Activity
 
 	private Button mAddAccountButton;
 	private Button mImportContactsButton;
+	private Button mLogoutButton;
 	private ListView mContactList;
 	private Client mKinveyClient;
-	private String user = "test";
+	private String user;
 	private Context context = this;
 
 
@@ -94,7 +95,10 @@ public final class ContactManager extends Activity
 		Log.v(TAG, "Activity State: onCreate()");
 		super.onCreate(savedInstanceState);
 
-
+		//grab user
+		user = getIntent().getExtras().getString("user");
+		Log.v(TAG, "username in manager: " + user);
+		
 		//Connect to Kinvey Backend
 		mKinveyClient = new Client.Builder(this.getApplicationContext()).build();
 
@@ -105,7 +109,7 @@ public final class ContactManager extends Activity
 		mAddAccountButton = (Button) findViewById(R.id.addContactButton);
 		mImportContactsButton = (Button) findViewById(R.id.importURLButton);
 		mContactList = (ListView) findViewById(R.id.contactList);
-
+		mLogoutButton = (Button) findViewById(R.id.logoutButton);
 
 		// Register handler for UI elements
 		mAddAccountButton.setOnClickListener(new View.OnClickListener() {
@@ -122,10 +126,18 @@ public final class ContactManager extends Activity
 
 			}
 		});
+		mLogoutButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				mKinveyClient.user().logout().execute();
+				launchLogin();
+			}
+		});
 
 
 
-		mKinveyClient.user().logout().execute();
+		//mKinveyClient.user().logout().execute();
 		//		//testing
 		//		mKinveyClient.user().create("tested", "pass", new KinveyUserCallback() {
 		//			public void onFailure(Throwable t) {
@@ -138,21 +150,6 @@ public final class ContactManager extends Activity
 		//			}
 		//		});
 
-		//Login with test account for now
-		if (!mKinveyClient.user().isUserLoggedIn()){
-
-			mKinveyClient.user().login(user, "pass", new KinveyUserCallback() {
-				public void onFailure(Throwable t) {
-					CharSequence text = "Wrong username or password.";
-					Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-				}
-				public void onSuccess(User u) {
-					CharSequence text = "Welcome back," + u.getUsername() + ".";
-					Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-				}
-			});
-
-		}
 
 		//grab and populate contacts
 		getContacts();
@@ -163,7 +160,7 @@ public final class ContactManager extends Activity
 	public class CustomComparator implements Comparator<ContactEntity> {
 		@Override
 		public int compare(ContactEntity o1, ContactEntity o2) {
-			return o1.getName().compareTo(o2.getName());
+			return o1.getName().compareToIgnoreCase(o2.getName());
 		}
 	}
 
@@ -233,15 +230,16 @@ public final class ContactManager extends Activity
 		//get contacts for user
 		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
 		Query myQuery = mKinveyClient.query();
+		Log.v(TAG, "querying for: " + user);
 		myQuery.equals("account", user);	//only get contacts associated with correct account
 		final ProgressDialog progressDialog = ProgressDialog.show(this, "Getting Contacts", "just a moment");
 		contacts.get(myQuery, new KinveyListCallback<ContactEntity>()     {
 			@Override
 			public void onSuccess(ContactEntity[] result) { 
 				progressDialog.dismiss();
-				Log.v(TAG, "received "+ result.length + " events");
+				//Log.v(TAG, "received "+ result.length + " events");
 				for (ContactEntity i : result)
-					Log.v(TAG, "received: " + i.getName());
+					//Log.v(TAG, "received: " + i.getName());
 				//on success, populate the listview
 				populateContactList(result);
 			}
@@ -270,6 +268,19 @@ public final class ContactManager extends Activity
 		Intent i = new Intent(this, ContactImporter.class);
 		i.putExtra("user", user);
 		startActivity(i);
+	}
+	
+	/**
+	 * Launches the Login activity.
+	 */
+	protected void launchLogin() {
+		Intent i = new Intent(this, Login.class);
+		startActivity(i);
+	}
+	
+	//override back button so usre can't back into login screen
+	@Override
+	public void onBackPressed() {
 	}
 
 

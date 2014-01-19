@@ -42,6 +42,7 @@
     <string name="usernameLabel">Username:</string>
     <string name="passwordLabel">Password:</string>
     <string name="registerLabel">Register</string>
+    <string name="logoutLabel">Logout</string>
     
 
 </resources>

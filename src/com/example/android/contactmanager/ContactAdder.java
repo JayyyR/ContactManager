@@ -235,6 +235,7 @@ public final class ContactAdder extends Activity
 	//method that will refresh contact list
 	protected void goBackToContactManager(){
 		Intent i = new Intent(this, ContactManager.class);
+		i.putExtra("user", user);
 		startActivity(i);
 	}
 }

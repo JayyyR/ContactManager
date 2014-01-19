@@ -23,14 +23,20 @@
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name" >
-        <activity
-            android:name="com.example.android.contactmanager.ContactManager"
-            android:label="@string/app_name" >
+         <activity
+            android:name="com.example.android.contactmanager.Login"
+            android:label="@string/title_activity_login" >
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.example.android.contactmanager.ContactManager"
+            android:label="@string/app_name" >
+            
         </activity>
         <activity
             android:name="com.example.android.contactmanager.ContactAdder"
@@ -40,10 +46,7 @@
             android:name="com.example.android.contactmanager.ContactImporter"
             android:label="@string/title_activity_contact_importer" >
         </activity>
-        <activity
-            android:name="com.example.android.contactmanager.Login"
-            android:label="@string/title_activity_login" >
-        </activity>
+       
     </application>
 
     <uses-sdk
