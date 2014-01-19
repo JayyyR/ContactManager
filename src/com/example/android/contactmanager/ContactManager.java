@@ -136,19 +136,7 @@ public final class ContactManager extends Activity
 		});
 
 
-
-		//mKinveyClient.user().logout().execute();
-		//		//testing
-		//		mKinveyClient.user().create("tested", "pass", new KinveyUserCallback() {
-		//			public void onFailure(Throwable t) {
-		//				CharSequence text = "Could not sign up.";
-		//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-		//			}
-		//			public void onSuccess(User u) {
-		//				CharSequence text = u.getUsername() + ", your account has been created.";
-		//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-		//			}
-		//		});
+		
 
 
 		//grab and populate contacts

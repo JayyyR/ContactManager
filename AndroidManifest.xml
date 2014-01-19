@@ -12,7 +12,7 @@
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
-     limitations under the License.
+     limitations under the License.
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -23,10 +23,9 @@
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name" >
-         <activity
+        <activity
             android:name="com.example.android.contactmanager.Login"
             android:label="@string/title_activity_login" >
-            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,7 +35,6 @@
         <activity
             android:name="com.example.android.contactmanager.ContactManager"
             android:label="@string/app_name" >
-            
         </activity>
         <activity
             android:name="com.example.android.contactmanager.ContactAdder"
@@ -46,7 +44,10 @@
             android:name="com.example.android.contactmanager.ContactImporter"
             android:label="@string/title_activity_contact_importer" >
         </activity>
-       
+        <activity
+            android:name="com.example.android.contactmanager.Register"
+            android:label="@string/title_activity_register" >
+        </activity>
     </application>
 
     <uses-sdk

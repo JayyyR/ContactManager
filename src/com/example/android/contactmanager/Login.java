@@ -17,10 +17,10 @@ import android.widget.Toast;
 public class Login extends Activity {
 	
 	private Client mKinveyClient;
-	private EditText usernameField;
-	private EditText passwordField;
-	private Button loginButton;
-	private Button registerButton;
+	private EditText mUsernameField;
+	private EditText mPasswordField;
+	private Button mLoginButton;
+	private Button mRegisterButton;
 	private String username;
 	
 
@@ -54,21 +54,21 @@ public class Login extends Activity {
 		}
 		
 		//grab UI elements
-		usernameField = (EditText) findViewById(R.id.usernameEditText);
-		passwordField = (EditText) findViewById(R.id.passwordEditText);
-		loginButton = (Button) findViewById(R.id.loginButton);
-		registerButton = (Button) findViewById(R.id.registerButton);
+		mUsernameField = (EditText) findViewById(R.id.usernameEditText);
+		mPasswordField = (EditText) findViewById(R.id.passwordEditText);
+		mLoginButton = (Button) findViewById(R.id.loginButton);
+		mRegisterButton = (Button) findViewById(R.id.registerButton);
 		
 		
 		
 		//set login button
-		loginButton.setOnClickListener(new View.OnClickListener() {
+		mLoginButton.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				
-				username = usernameField.getText().toString();
-				String password = passwordField.getText().toString();
+				username = mUsernameField.getText().toString();
+				String password = mPasswordField.getText().toString();
 				mKinveyClient.user().login(username, password, new KinveyUserCallback() {
 					public void onFailure(Throwable t) {
 						CharSequence text = "Wrong username or password.";
@@ -82,6 +82,16 @@ public class Login extends Activity {
 					}
 				});
 				
+			}
+		});
+		
+		//set register button
+		mRegisterButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				launchRegisterActivity();
 			}
 		});
 
@@ -98,6 +108,11 @@ public class Login extends Activity {
 	protected void launchContactManager(){
 		Intent i = new Intent(this, ContactManager.class);
 		i.putExtra("user", username);
+		startActivity(i);
+	}
+	
+	protected void launchRegisterActivity(){
+		Intent i = new Intent(this, Register.class);
 		startActivity(i);
 	}
 
