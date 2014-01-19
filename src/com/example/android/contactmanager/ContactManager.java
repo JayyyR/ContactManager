@@ -26,12 +26,14 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -40,6 +42,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -55,6 +58,7 @@ import com.kinvey.android.Client;
 import com.kinvey.android.callback.KinveyListCallback;
 import com.kinvey.android.callback.KinveyPingCallback;
 import com.kinvey.android.callback.KinveyUserCallback;
+import com.kinvey.java.Query;
 import com.kinvey.java.User;
 import com.kinvey.java.core.KinveyClientCallback;
 
@@ -68,7 +72,8 @@ public final class ContactManager extends Activity
 	private ListView mContactList;
 	private Client mKinveyClient;
 	private String user = "test";
-	
+
+
 	/**
 	 * Called when the activity is first created. Responsible for initializing the UI.
 	 */
@@ -98,30 +103,29 @@ public final class ContactManager extends Activity
 				launchContactAdder();
 			}
 		});
-		
 		mImportContactsButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				launchImporter();
-				
+
 			}
 		});
-		
+
 
 
 		mKinveyClient.user().logout().execute();
-//		//testing
-//		mKinveyClient.user().create("tested", "pass", new KinveyUserCallback() {
-//			public void onFailure(Throwable t) {
-//				CharSequence text = "Could not sign up.";
-//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-//			}
-//			public void onSuccess(User u) {
-//				CharSequence text = u.getUsername() + ", your account has been created.";
-//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-//			}
-//		});
+		//		//testing
+		//		mKinveyClient.user().create("tested", "pass", new KinveyUserCallback() {
+		//			public void onFailure(Throwable t) {
+		//				CharSequence text = "Could not sign up.";
+		//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+		//			}
+		//			public void onSuccess(User u) {
+		//				CharSequence text = u.getUsername() + ", your account has been created.";
+		//				Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+		//			}
+		//		});
 
 		//Login with test account for now
 		if (!mKinveyClient.user().isUserLoggedIn()){
@@ -139,43 +143,30 @@ public final class ContactManager extends Activity
 
 		}
 
-		
-		//get contacts for user
-		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts" + user, ContactEntity.class);
-		contacts.get(new KinveyListCallback<ContactEntity>()     {
-		  @Override
-		  public void onSuccess(ContactEntity[] result) { 
-		    Log.v(TAG, "received "+ result.length + " events");
-		    for (ContactEntity i : result)
-		    	Log.v(TAG, "received: " + i.getName());
-		  }
-		  @Override
-		  public void onFailure(Throwable error)  { 
-		    Log.e(TAG, "failed to fetch all", error);
-		  }
-		});
+
+
 
 		// Populate the contact list
 		// populateContactList();
-		
-		
-		
-	    
+		getContacts();
+
+
+
 	}
-	
+
 
 
 	/**
 	 * Populate the contact list based on account currently selected in the account spinner.
 	 */
-	private void populateContactList() {
+	private void populateContactList(ContactEntity[] contactList) {
 		// Build adapter with contact entries
-		Cursor cursor = getContacts();
-		String[] fields = new String[] {
-				ContactsContract.Data.DISPLAY_NAME
-		};
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.contact_entry, cursor,
-				fields, new int[] {R.id.contactEntryText});
+		ArrayList<String> contactNames = new ArrayList<String>();
+		for (ContactEntity x : contactList){
+			contactNames.add(x.getName());
+		}
+		Collections.sort(contactNames);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,  android.R.layout.simple_list_item_1, android.R.id.text1, contactNames);
 		mContactList.setAdapter(adapter);
 	}
 
@@ -184,19 +175,30 @@ public final class ContactManager extends Activity
 	 *
 	 * @return A cursor for for accessing the contact list.
 	 */
-	private Cursor getContacts()
+	private void getContacts()
 	{
-		// Run query
-		Uri uri = ContactsContract.Contacts.CONTENT_URI;
-		String[] projection = new String[] {
-				ContactsContract.Contacts._ID,
-				ContactsContract.Contacts.DISPLAY_NAME
-		};
-		String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
-		String[] selectionArgs = null;
-		String sortOrder = ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
-
-		return managedQuery(uri, projection, selection, selectionArgs, sortOrder);
+		
+		//get contacts for user
+		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
+		Query myQuery = mKinveyClient.query();
+		myQuery.equals("account", user);	//only get contacts associated with correct account
+		final ProgressDialog progressDialog = ProgressDialog.show(this, "Getting Contacts", "just a moment");
+		contacts.get(myQuery, new KinveyListCallback<ContactEntity>()     {
+			@Override
+			public void onSuccess(ContactEntity[] result) { 
+				progressDialog.dismiss();
+				Log.v(TAG, "received "+ result.length + " events");
+				for (ContactEntity i : result)
+					Log.v(TAG, "received: " + i.getName());
+				populateContactList(result);
+			}
+			@Override
+			public void onFailure(Throwable error)  { 
+				progressDialog.dismiss();
+				Log.e(TAG, "failed to fetch all", error);
+			}
+		});
+		
 	}
 
 	/**
@@ -206,7 +208,7 @@ public final class ContactManager extends Activity
 		Intent i = new Intent(this, ContactAdder.class);
 		startActivity(i);
 	}
-	
+
 	/**
 	 * Launches the Importer activity to import contacts to selected account.
 	 */
@@ -215,6 +217,6 @@ public final class ContactManager extends Activity
 		i.putExtra("user", user);
 		startActivity(i);
 	}
-	
-	
+
+
 }
