@@ -242,6 +242,7 @@ public final class ContactManager extends Activity
 				Log.v(TAG, "received "+ result.length + " events");
 				for (ContactEntity i : result)
 					Log.v(TAG, "received: " + i.getName());
+				//on success, populate the listview
 				populateContactList(result);
 			}
 			@Override

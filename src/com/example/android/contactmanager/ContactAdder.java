@@ -205,14 +205,18 @@ public final class ContactAdder extends Activity
 			emailEntity.set("type", "other");
 			break;
 		}
+		//add entities to arraylists to account for how information is read on the contact list
 		ArrayList<ContactEntity.phone> phones = new ArrayList<ContactEntity.phone>();
 		ArrayList<ContactEntity.email> emails = new ArrayList<ContactEntity.email>();
 		phones.add(phoneEntity);
 		emails.add(emailEntity);
+		
+		//set the phone and emails to the contact entity object
 		contact.set("phone", phones);
 		contact.set("email", emails);
 		Log.v(TAG, "saving: "+contact);
 
+		//save the contact
 		AsyncAppData<ContactEntity> contacts = mKinveyClient.appData("contacts", ContactEntity.class);
 		contacts.save(contact, new KinveyClientCallback<ContactEntity>() {
 			@Override
@@ -228,6 +232,7 @@ public final class ContactAdder extends Activity
 		});
 	}
 	
+	//method that will refresh contact list
 	protected void goBackToContactManager(){
 		Intent i = new Intent(this, ContactManager.class);
 		startActivity(i);
